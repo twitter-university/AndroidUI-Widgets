@@ -31,6 +31,7 @@ import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.twitter.university.android.tagview.R;
@@ -49,6 +50,7 @@ public class TagView extends View {
     private static final int PAD_V = 30;
     private static final int TEXT_SIZE = 64;
     private static final int TEXT_COLOR = Color.BLUE;
+    private static final float CORNER_RADIUS = 20.0F;
     private static final int TAG_BG = R.drawable.tag;
 
 
@@ -80,6 +82,7 @@ public class TagView extends View {
         Paint.FontMetrics metrics = textPaint.getFontMetrics();
         textBaseline = metrics.leading - metrics.ascent;
         textHeight = metrics.descent + textBaseline;
+        textPaint.setStyle(Paint.Style.STROKE);
     }
 
     /**
@@ -111,18 +114,27 @@ public class TagView extends View {
      */
     @Override
     protected void onMeasure(int wSpec, int hSpec) {
+        int w = (int) (getPaddingLeft() + getPaddingRight()
+                + (2 * (MARGIN + PAD_H)) + textPaint.measureText(tag));
+        int h = (int) (getPaddingTop() + getPaddingBottom()
+                + (2 * (MARGIN + PAD_V)) + textHeight);
+        setMeasuredDimension(
+            View.getDefaultSize(w, wSpec),
+            View.getDefaultSize(h, hSpec));
+    }
 
-        int h = View.getDefaultSize(
-                (int) (getPaddingLeft() + getPaddingRight()
-                        + (2 * (MARGIN + PAD_H)) +   textPaint.measureText(tag)),
-                wSpec);
-
-        int v = View.getDefaultSize(
-                (int) (getPaddingTop() + getPaddingBottom()
-                        + (2 * (MARGIN + PAD_V)) +   textHeight),
-                wSpec);
-
-        setMeasuredDimension((int) h, (int) v);
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (changed) {
+            int padL = getPaddingLeft();
+            int padT = getPaddingTop();
+            bounds.set(
+                padL,
+                padT,
+                right - (left + padL + getPaddingRight()),
+                bottom - (top + padT + getPaddingBottom()));
+        }
     }
 
     /**
@@ -130,10 +142,27 @@ public class TagView extends View {
      */
     @Override
     protected void onDraw(Canvas canvas) {
+        tagBorderTL.set(bounds.left + MARGIN, bounds.top + MARGIN);
+
+        float h = Math.min(
+            (2 * PAD_V) + textHeight,
+            bounds.bottom - (bounds.top + (2 * MARGIN)));
+
+        float w = Math.min(
+            (2 * PAD_H) + textPaint.measureText(tag),
+            bounds.right - (bounds.left + (2 * MARGIN)));
+
+        tagRectF.set(tagBorderTL.x, tagBorderTL.y, tagBorderTL.x + w, tagBorderTL.y + h);
+
+        canvas.drawRoundRect(tagRectF, CORNER_RADIUS, CORNER_RADIUS, textPaint);
+
+        tagRectF.inset(PAD_H, PAD_V);
+        canvas.clipRect(tagRectF);
+
         canvas.drawText(
             tag,
-            0,
-            textBaseline,
+            (int) tagRectF.left,
+            (int) tagRectF.top + textBaseline,
             textPaint);
     }
 }
