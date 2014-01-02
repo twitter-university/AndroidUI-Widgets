@@ -20,6 +20,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -64,6 +65,8 @@ public class TagView extends View {
     private final PointF tagBorderTL = new PointF();
     private final PointF tagTL = new PointF();
 
+    private final Paint drawingPaint;
+
     private String tag;
 
     /**
@@ -73,6 +76,8 @@ public class TagView extends View {
      */
     public TagView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+
+        drawingPaint = new TextPaint();
 
         textPaint = new TextPaint();
         textPaint.setAntiAlias(true);
@@ -154,15 +159,27 @@ public class TagView extends View {
 
         tagRectF.set(tagBorderTL.x, tagBorderTL.y, tagBorderTL.x + w, tagBorderTL.y + h);
 
-        canvas.drawRoundRect(tagRectF, CORNER_RADIUS, CORNER_RADIUS, textPaint);
+        drawingPaint.set(textPaint);
+        canvas.drawRoundRect(tagRectF, CORNER_RADIUS, CORNER_RADIUS, drawingPaint);
 
         tagRectF.inset(PAD_H, PAD_V);
         canvas.clipRect(tagRectF);
 
+        canvas.save();
+        canvas.rotate(
+            180.0F,
+            tagRectF.left + ((tagRectF.right - tagRectF.left) / 2),
+            tagRectF.top + ((tagRectF.bottom - tagRectF.top) / 2));
+
+        drawingPaint.setShadowLayer(0.5F, 15.0F, 17.0F, Color.GREEN);
+        drawingPaint.setStyle(Paint.Style.FILL);
+
         canvas.drawText(
-            tag,
-            (int) tagRectF.left,
-            (int) tagRectF.top + textBaseline,
-            textPaint);
+                tag,
+                (int) tagBorderTL.x + PAD_H,
+                (int) tagBorderTL.y + PAD_V + textBaseline,
+                drawingPaint);
+
+        canvas.restore();
     }
 }
