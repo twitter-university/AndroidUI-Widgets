@@ -20,8 +20,8 @@ public class TagViewActivity extends Activity {
         setContentView(R.layout.activity_tag_view);
 
         TagView tags = ((TagView) findViewById(R.id.tags));
-        tags.setTag("One");
-        tags.setTag("Thirteen Twenty-three Thirty-three Forty-three Fifty-three Sixty-three Seventy-three Eighty-three Ninty-three One oh three");
+        tags.setTag("One", 0);
+        tags.setTag("Thirteen Twenty-three Thirty-three Forty-three Fifty-three Sixty-three Seventy-three Eighty-three Ninty-three One oh three", 1);
 //        tags.addTag("Two", 0);
 //        tags.addTag("Three", 0);
 //        tags.addTag("Four", 0);
